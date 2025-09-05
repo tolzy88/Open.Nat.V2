@@ -16,7 +16,8 @@
   </PropertyGroup>
 	
   <PropertyGroup>
-    <RepositoryUrl>https://github.com/tolzy88/Open.Nat.V2.git</RepositoryUrl>
+	<PackageProjectUrl>https://github.com/tolzy88/Open.Nat.V2</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/tolzy88/Open.Nat.V2.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 	
