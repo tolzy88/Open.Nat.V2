@@ -9,9 +9,9 @@
         <Description>.NET Library for automatic network address translation</Description>
         <NeutralLanguage>en</NeutralLanguage>
         <Copyright>Copyright Alan McGovern, Ben Motmans, Lucas Ontivero ©  2006-2014</Copyright>
-        <Version>3.0.0</Version>
-	    <AssemblyVersion>3.0.0.0</AssemblyVersion>
-        <FileVersion>3.0.0.0</FileVersion>
+        <Version>3.0.1</Version>
+	    <AssemblyVersion>3.0.1.0</AssemblyVersion>
+        <FileVersion>3.0.1.0</FileVersion>
         <OutputType>Library</OutputType>
     </PropertyGroup>
 
@@ -26,6 +26,7 @@
         <RepositoryType>git</RepositoryType>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 	
     <ItemGroup>
