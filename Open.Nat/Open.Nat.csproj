@@ -1,32 +1,40 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <Platforms>AnyCPU;x64;x86</Platforms>
-    <PackageId>Open.Nat.V2</PackageId>
-    <Authors>tolzy88, Alan McGovern, Ben Motmans, Lucas Ontivero</Authors>
-    <Product>Open.Nat.V2</Product>
-    <PackageTags>Networking</PackageTags>
-    <Description>.NET Library for automatic network address translation</Description>
-    <NeutralLanguage>en</NeutralLanguage>
-    <Copyright>Copyright Alan McGovern, Ben Motmans, Lucas Ontivero ©  2006-2014</Copyright>
-    <Version>3.0.0</Version>
-	<AssemblyVersion>3.0.0.0</AssemblyVersion>
-    <FileVersion>3.0.0.0</FileVersion>
-    <OutputType>Library</OutputType>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <Platforms>AnyCPU;x64;x86</Platforms>
+        <PackageId>Open.Nat.V2</PackageId>
+        <Authors>tolzy88, Alan McGovern, Ben Motmans, Lucas Ontivero</Authors>
+        <Product>Open.Nat.V2</Product>
+        <PackageTags>Networking</PackageTags>
+        <Description>.NET Library for automatic network address translation</Description>
+        <NeutralLanguage>en</NeutralLanguage>
+        <Copyright>Copyright Alan McGovern, Ben Motmans, Lucas Ontivero ©  2006-2014</Copyright>
+        <Version>3.0.0</Version>
+	    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+        <FileVersion>3.0.0.0</FileVersion>
+        <OutputType>Library</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+	    <None Include="..\LICENSE" Pack="true" PackagePath="" Visible="false" />
+	    <None Include="..\README.md" Pack="true" PackagePath="" />
+    </ItemGroup>
 	
-  <PropertyGroup>
-	<PackageProjectUrl>https://github.com/tolzy88/Open.Nat.V2</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/tolzy88/Open.Nat.V2.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-  </PropertyGroup>
+    <PropertyGroup>
+        <PackageProjectUrl>https://github.com/tolzy88/Open.Nat.V2</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/tolzy88/Open.Nat.V2.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
 	
-	<ItemGroup>
-		<InternalsVisibleTo Include="Open.Nat.UnitTests" />
-	</ItemGroup>
+    <ItemGroup>
+	    <InternalsVisibleTo Include="Open.Nat.UnitTests" />
+    </ItemGroup>
 	
-  <ItemGroup>
-    <Compile Remove="Upnp\Messages\Responses\AddPortMappingResponseMessage.cs" />
-    <Compile Remove="Upnp\Messages\Responses\DeletePortMappingResponseMessage.cs" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Remove="Upnp\Messages\Responses\AddPortMappingResponseMessage.cs" />
+        <Compile Remove="Upnp\Messages\Responses\DeletePortMappingResponseMessage.cs" />
+    </ItemGroup>
+	
 </Project>
