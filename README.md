@@ -3,8 +3,11 @@
 Open.Nat.V2
 ======
 
-Open.NAT is a lightweight and easy-to-use class library to allow port forwarding in NAT devices that support UPNP (Universal Plug & Play) and/or PMP (Port Mapping Protocol).
+Open.Nat.V2 is a lightweight and easy-to-use class library to allow port forwarding in NAT devices that support UPNP (Universal Plug & Play) and/or PMP (Port Mapping Protocol).
 
+About this Fork
+-----
+The parent repository was archived last year, and I forked this to keep it going. I retargeted the Library to .NET Standard 2.0 (which supports .NET Framework 4.6.1 and newer) and removed a lot of the legacy .NET Framework 3.5 baggage. I also updated/reworked the Unit Tests, and the current build is passing all tests =) Enjoy!
 
 Goals
 -----
