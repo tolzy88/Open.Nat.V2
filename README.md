@@ -1,6 +1,6 @@
 ![Logo](https://github.com/lontivero/Open.Nat/raw/gh-pages/images/logos/128.jpg)
 
-Open.NAT
+Open.Nat.V2
 ======
 
 Open.NAT is a lightweight and easy-to-use class library to allow port forwarding in NAT devices that support UPNP (Universal Plug & Play) and/or PMP (Port Mapping Protocol).
