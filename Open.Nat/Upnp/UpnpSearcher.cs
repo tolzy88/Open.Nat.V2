@@ -36,6 +36,7 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Threading;
 using System.Xml;
+using Open.Nat.Upnp;
 
 namespace Open.Nat
 {

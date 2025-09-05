@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -7,9 +6,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Open.Nat.UnitTests
 {
 	[TestClass]
-	public class InternetProtocolV6Tests
+	public class InternetProtocolV4Tests
 	{
-		private const string IPV6_ADDRESS = "FE80::0202:B3FF:FE1E:8329";
+		private const string IPV4_ADDRESS = "192.0.2.1";
         private UpnpMockServer _server;
 
 		[TestInitialize]
@@ -17,12 +16,12 @@ namespace Open.Nat.UnitTests
 		{
             var cfg = new UpnpMockServer.Configuration
             {
-                BasePrefix = "http://[::1]:5431/",
+                BasePrefix = "http://127.0.0.1:5431/",
                 ServiceDescPath = "/dyndev/uuid:0000e068-20a0-00e0-20a0-48a8000808e0",
                 ControlPath = "/uuid:0000e068-20a0-00e0-20a0-48a802086048/WANIPConnection:1",
                 ServiceType = "WANIPConnection:1",
-                ExternalIp = IPAddress.Parse(IPV6_ADDRESS),
-                Ssdp = UpnpMockServer.SsdpMode.IPv6
+                ExternalIp = IPAddress.Parse(IPV4_ADDRESS),
+                Ssdp = UpnpMockServer.SsdpMode.IPv4
             };
             _server = new UpnpMockServer(cfg);
             _server.StartAsync().GetAwaiter().GetResult();
@@ -31,8 +30,8 @@ namespace Open.Nat.UnitTests
 		[TestCleanup]
 		public void TearDown()
 		{
-			_server.Dispose();
-		}
+            _server.Dispose();
+        }
 
 		[TestMethod]
 		public async Task Connect()
@@ -43,17 +42,17 @@ namespace Open.Nat.UnitTests
             NatDevice device = null;
             foreach (var d in devices)
 			{
-				if (d.HostEndPoint.ToString().StartsWith("[::1]"))
+				if (d.HostEndPoint.ToString().StartsWith("127.0.0.1"))
 					device = d;
             }
             Assert.IsNotNull(device);
 
 			var ip = await device.GetExternalIPAsync();
-			Assert.AreEqual(IPAddress.Parse(IPV6_ADDRESS), ip);
-
-            var testMapping = new Mapping(Protocol.Tcp, 1600, 1600, "Test");
+			Assert.AreEqual(IPAddress.Parse(IPV4_ADDRESS), ip);
+			
+			var testMapping = new Mapping(Protocol.Tcp, 1600, 1600, "Test");
             await device.CreatePortMapAsync(testMapping);
-            await device.DeletePortMapAsync(testMapping);
+			await device.DeletePortMapAsync(testMapping);
         }
 	}
 }
