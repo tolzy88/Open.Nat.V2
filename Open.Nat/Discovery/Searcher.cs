@@ -45,16 +45,16 @@ namespace Open.Nat
 
 		public async Task<IEnumerable<NatDevice>> Search(CancellationToken cancelationToken)
 		{
-			await Task.Factory.StartNew(_ =>
+			await Task.Run(async () =>
 				{
 					NatDiscoverer.TraceSource.LogInfo("Searching for: {0}", GetType().Name);
 					while (!cancelationToken.IsCancellationRequested)
 					{
 						Discover(cancelationToken);
-						Receive(cancelationToken);
+						await ReceiveAsync(cancelationToken);
 					}
 					CloseUdpClients();
-				}, null, cancelationToken);
+				}, cancelationToken);
 			return _devices;
 		}
 
@@ -76,7 +76,7 @@ namespace Open.Nat
 			}
 		}
 
-		private void Receive(CancellationToken cancelationToken)
+		private async Task ReceiveAsync(CancellationToken cancelationToken)
 		{
 			foreach (var client in UdpClients.Where(x=>x.Available>0))
 			{
@@ -85,7 +85,7 @@ namespace Open.Nat
 				var localHost = ((IPEndPoint)client.Client.LocalEndPoint).Address;
 				var receivedFrom = new IPEndPoint(IPAddress.None, 0);
 				var buffer = client.Receive(ref receivedFrom);
-				var device = AnalyseReceivedResponse(localHost, buffer, receivedFrom);
+				var device = await AnalyseReceivedResponseAsync(localHost, buffer, receivedFrom);
 
 				if (device != null) RaiseDeviceFound(device);
 			}
@@ -94,7 +94,7 @@ namespace Open.Nat
 
 		protected abstract void Discover(UdpClient client, CancellationToken cancelationToken);
 
-		public abstract NatDevice AnalyseReceivedResponse(IPAddress localAddress, byte[] response, IPEndPoint endpoint);
+		public abstract Task<NatDevice> AnalyseReceivedResponseAsync(IPAddress localAddress, byte[] response, IPEndPoint endpoint);
 
 		public void CloseUdpClients()
 		{
@@ -107,9 +107,7 @@ namespace Open.Nat
 		private void RaiseDeviceFound(NatDevice device)
 		{
 			_devices.Add(device);
-			var handler = DeviceFound;
-			if(handler!=null)
-				handler(this, new DeviceEventArgs(device));
-		}
+            DeviceFound?.Invoke(this, new DeviceEventArgs(device));
+        }
 	}
 }

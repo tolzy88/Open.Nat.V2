@@ -67,8 +67,8 @@ namespace Open.Nat
 		public Protocol Protocol { get; internal set; }
 		/// <summary>
 		/// The PrivatePort parameter specifies the port on a client machine to which all traffic 
-		/// coming in on <see cref="#PublicPort">PublicPort</see> for the protocol specified by 
-		/// <see cref="#Protocol">Protocol</see> should be forwarded to.
+		/// coming in on <see cref="PublicPort">PublicPort</see> for the protocol specified by 
+		/// <see cref="Protocol">Protocol</see> should be forwarded to.
 		/// </summary>
 		/// <see cref="Protocol">Protocol enum</see>
 		public int PrivatePort { get; internal set; }
@@ -87,7 +87,7 @@ namespace Open.Nat
 		/// Since most programs don't know this in advance, it is often set to 0, which means 'unlimited' or 'permanent'.
 		/// </summary>
 		/// <remarks>
-		/// All portmappings are release automatically as part of the shutdown process when <see cref="NatDiscoverer">NatUtility</see>.<see cref="NatUtility#releaseonshutdown">ReleaseOnShutdown</see> is true.
+		/// All portmappings are release automatically as part of the shutdown process when <see cref="NatDiscoverer">NatUtility</see>.ReleaseOnShutdown is true.
 		/// Permanent portmappings will not be released if the process ends anormally.
 		/// Since most programs don't know the lifetime in advance, Open.NAT renew all the portmappings (except the permanents) before they expires. So, developers have to close explicitly those portmappings
 		/// they don't want to remain open for the session.
@@ -119,7 +119,7 @@ namespace Open.Nat
 		}
 
 		/// <summary>
-		/// Gets the expiration. The property value is calculated using <see cref="#Lifetime">Lifetime</see> property.
+		/// Gets the expiration. The property value is calculated using <see cref="Lifetime">Lifetime</see> property.
 		/// </summary>
 		public DateTime Expiration
 		{
@@ -237,11 +237,10 @@ namespace Open.Nat
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
-			var m = obj as Mapping;
-			if (ReferenceEquals(null, m)) return false;
-			return PublicPort == m.PublicPort && PrivatePort == m.PrivatePort;
+            if (!(obj is Mapping m)) return false;
+            return PublicPort == m.PublicPort && PrivatePort == m.PrivatePort;
 		}
 
 		public override int GetHashCode()

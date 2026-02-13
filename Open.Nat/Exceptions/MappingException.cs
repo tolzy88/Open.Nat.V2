@@ -27,15 +27,12 @@
 //
 
 using System;
-using System.Runtime.Serialization;
-using System.Security.Permissions;
 
 namespace Open.Nat
 {
 	/// <summary>
 	/// 
 	/// </summary>
-	[Serializable]
 	public class MappingException : Exception
 	{
 		/// <summary>
@@ -71,21 +68,6 @@ namespace Open.Nat
 		{
 		}
 
-		protected MappingException(SerializationInfo info, StreamingContext context)
-			: base(info, context)
-		{
-		}
-
 		#endregion
-
-		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-		public override void GetObjectData(SerializationInfo info, StreamingContext context)
-		{
-			if (info == null) throw new ArgumentNullException("info");
-
-			ErrorCode = info.GetInt32("errorCode");
-			ErrorText = info.GetString("errorText");
-			base.GetObjectData(info, context);
-		}
 	}
 }

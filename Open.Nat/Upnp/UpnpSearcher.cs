@@ -28,13 +28,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Net;
+using System.Net.Http;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using Open.Nat.Upnp;
 
@@ -142,7 +143,7 @@ namespace Open.Nat
 			return false;
 		}
 
-		public override NatDevice AnalyseReceivedResponse(IPAddress localAddress, byte[] response, IPEndPoint endpoint)
+		public override async Task<NatDevice> AnalyseReceivedResponseAsync(IPAddress localAddress, byte[] response, IPEndPoint endpoint)
 		{
 			// Convert it to a string for easy parsing
 			string dataString = null;
@@ -186,7 +187,7 @@ namespace Open.Nat
 
 				NatDiscoverer.TraceSource.LogInfo("{0}:{1}: Fetching service list", locationUri.Host, locationUri.Port );
 
-				var deviceInfo = BuildUpnpNatDeviceInfo(localAddress, locationUri);
+				var deviceInfo = await BuildUpnpNatDeviceInfoAsync(localAddress, locationUri);
 
 				UpnpNatDevice device;
 				lock (_devices)
@@ -223,30 +224,30 @@ namespace Open.Nat
 			return services.Any();
 		}
 
-		private UpnpNatDeviceInfo BuildUpnpNatDeviceInfo(IPAddress localAddress, Uri location)
+		private static readonly HttpClient HttpClient = new HttpClient();
+
+		private async Task<UpnpNatDeviceInfo> BuildUpnpNatDeviceInfoAsync(IPAddress localAddress, Uri location)
 		{
 			NatDiscoverer.TraceSource.LogInfo("Found device at: {0}", location.ToString());
 
 			var hostEndPoint = new IPEndPoint(IPAddress.Parse(location.Host), location.Port);
 
-			WebResponse response = null;
 			try
 			{
-				var request = WebRequest.CreateHttp(location);
+				var request = new HttpRequestMessage(HttpMethod.Get, location);
 				request.Headers.Add("ACCEPT-LANGUAGE", "en");
-				request.Method = "GET";
 
-				response = request.GetResponse();
+				var response = await HttpClient.SendAsync(request);
 
-				var httpresponse = response as HttpWebResponse;
-
-				if (httpresponse != null && httpresponse.StatusCode != HttpStatusCode.OK)
+				if (!response.IsSuccessStatusCode)
 				{
-					var message = string.Format("Couldn't get services list: {0} {1}", httpresponse.StatusCode, httpresponse.StatusDescription);
+					var message = string.Format("Couldn't get services list: {0} {1}", (int)response.StatusCode, response.ReasonPhrase);
 					throw new Exception(message);
 				}
 
-				var xmldoc = ReadXmlResponse(response);
+				var servicesXml = await response.Content.ReadAsStringAsync();
+				var xmldoc = new XmlDocument();
+				xmldoc.LoadXml(servicesXml);
 
 				NatDiscoverer.TraceSource.LogInfo("{0}: Parsed services list", hostEndPoint);
 
@@ -270,34 +271,17 @@ namespace Open.Nat
 
 				throw new Exception("No valid control service was found in the service descriptor document");
 			}
-			catch (WebException ex)
+			catch (HttpRequestException ex)
 			{
 				// Just drop the connection, FIXME: Should i retry?
 				NatDiscoverer.TraceSource.LogError("{0}: Device denied the connection attempt: {1}", hostEndPoint, ex);
-				var inner = ex.InnerException as SocketException;
-				if (inner != null)
-				{
-					NatDiscoverer.TraceSource.LogError("{0}: ErrorCode:{1}", hostEndPoint, inner.ErrorCode);
-					NatDiscoverer.TraceSource.LogError("Go to http://msdn.microsoft.com/en-us/library/system.net.sockets.socketerror.aspx");
-					NatDiscoverer.TraceSource.LogError("Usually this happens. Try resetting the device and try again. If you are in a VPN, disconnect and try again.");
-				}
-				throw;
-			}
-			finally
-			{
-				if (response != null)
-					response.Close();
-			}
-		}
-
-		private static XmlDocument ReadXmlResponse(WebResponse response)
-		{
-			using (var reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
-			{
-				var servicesXml = reader.ReadToEnd();
-				var xmldoc = new XmlDocument();
-				xmldoc.LoadXml(servicesXml);
-				return xmldoc;
+                if (ex.InnerException is SocketException inner)
+                {
+                    NatDiscoverer.TraceSource.LogError("{0}: ErrorCode:{1}", hostEndPoint, inner.ErrorCode);
+                    NatDiscoverer.TraceSource.LogError("Go to http://msdn.microsoft.com/en-us/library/system.net.sockets.socketerror.aspx");
+                    NatDiscoverer.TraceSource.LogError("Usually this happens. Try resetting the device and try again. If you are in a VPN, disconnect and try again.");
+                }
+                throw;
 			}
 		}
 	}

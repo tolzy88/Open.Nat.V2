@@ -32,6 +32,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Open.Nat
 {
@@ -123,13 +124,13 @@ namespace Open.Nat
 				.Any(x => x.Address.Equals(address));
 		}
 
-		public override NatDevice AnalyseReceivedResponse(IPAddress localAddress, byte[] response, IPEndPoint endpoint)
+		public override Task<NatDevice> AnalyseReceivedResponseAsync(IPAddress localAddress, byte[] response, IPEndPoint endpoint)
 		{
 			if (!IsSearchAddress(endpoint.Address)
 				|| response.Length != 12
 				|| response[0] != PmpConstants.Version
 				|| response[1] != PmpConstants.ServerNoop)
-				return null;
+				return Task.FromResult<NatDevice>(null);
 
 			int errorcode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(response, 2));
 			if (errorcode != 0)
@@ -139,7 +140,7 @@ namespace Open.Nat
 			//NextSearch = DateTime.Now.AddMinutes(5);
 
 			_timeout = 250;
-			return new PmpNatDevice(localAddress, endpoint.Address, publicIp);
+			return Task.FromResult<NatDevice>(new PmpNatDevice(localAddress, endpoint.Address, publicIp));
 		}
 	}
 }

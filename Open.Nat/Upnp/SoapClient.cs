@@ -28,8 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -40,6 +39,7 @@ namespace Open.Nat
 	{
 		private readonly string _serviceType;
 		private readonly Uri _url;
+		private static readonly HttpClient HttpClient = new HttpClient();
 
 		public SoapClient(Uri url, string serviceType)
 		{
@@ -51,66 +51,30 @@ namespace Open.Nat
 		{
 			NatDiscoverer.TraceSource.TraceEvent(TraceEventType.Verbose, 0, "SOAPACTION: **{0}** url:{1}", operationName,
 												 _url);
-			byte[] messageBody = BuildMessageBody(operationName, args);
-			HttpWebRequest request = BuildHttpWebRequest(operationName, messageBody);
+			string messageBody = BuildMessageBody(operationName, args);
 
-			if (messageBody.Length > 0)
-			{
-				using (var stream = await request.GetRequestStreamAsync())
-				{
-					await stream.WriteAsync(messageBody, 0, messageBody.Length);
-				}
-			}
+			var request = new HttpRequestMessage(HttpMethod.Post, _url);
+			request.Headers.ConnectionClose = true;
+			request.Headers.Add("SOAPACTION", "\"" + _serviceType + "#" + operationName + "\"");
+			request.Content = new StringContent(messageBody, Encoding.UTF8, "text/xml");
 
-			using(var response = await GetWebResponse(request))
-			{
-				var stream = response.GetResponseStream();
-				var contentLength = response.ContentLength;
-
-				var reader = new StreamReader(stream, Encoding.UTF8);
-
-				var responseBody = contentLength != -1
-									? reader.ReadAsMany((int) contentLength)
-									: reader.ReadToEnd();
-
-				var responseXml = GetXmlDocument(responseBody);
-
-				response.Close();
-				return responseXml;
-			}
-		}
-		private static async Task<WebResponse> GetWebResponse(WebRequest request)
-		{
-			WebResponse response;
+			HttpResponseMessage response;
 			try
 			{
-				response = await request.GetResponseAsync();
+				response = await HttpClient.SendAsync(request);
 			}
-			catch (WebException ex)
+			catch (HttpRequestException ex)
 			{
-				NatDiscoverer.TraceSource.TraceEvent(TraceEventType.Verbose, 0, "WebException status: {0}", ex.Status);
-
-				// Even if the request "failed" we need to continue reading the response from the router
-				response = ex.Response as HttpWebResponse;
-
-				if (response == null)
-					throw;
+				NatDiscoverer.TraceSource.TraceEvent(TraceEventType.Verbose, 0, "HttpRequestException: {0}", ex.Message);
+				throw;
 			}
-			return response;
+
+			var responseBody = await response.Content.ReadAsStringAsync();
+			var responseXml = GetXmlDocument(responseBody);
+			return responseXml;
 		}
 
-		private HttpWebRequest BuildHttpWebRequest(string operationName, byte[] messageBody)
-		{
-			var request = WebRequest.CreateHttp(_url);
-			request.KeepAlive = false;
-			request.Method = "POST";
-			request.ContentType = "text/xml; charset=\"utf-8\"";
-			request.Headers.Add("SOAPACTION", "\"" + _serviceType + "#" + operationName + "\"");
-			request.ContentLength = messageBody.Length;
-			return request;
-		}
-
-		private byte[] BuildMessageBody(string operationName, IEnumerable<KeyValuePair<string, object>> args)
+		private string BuildMessageBody(string operationName, IEnumerable<KeyValuePair<string, object>> args)
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine("<s:Envelope ");
@@ -126,10 +90,7 @@ namespace Open.Nat
 			sb.AppendLine("	  </u:" + operationName + ">");
 			sb.AppendLine("   </s:Body>");
 			sb.Append("</s:Envelope>\r\n\r\n");
-			string requestBody = sb.ToString();
-
-			byte[] messageBody = Encoding.UTF8.GetBytes(requestBody);
-			return messageBody;
+			return sb.ToString();
 		}
 
 		private XmlDocument GetXmlDocument(string response)

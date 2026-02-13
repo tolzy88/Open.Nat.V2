@@ -12,8 +12,8 @@ namespace Open.Nat
 	public class NatDiscoverer
 	{
 		/// <summary>
-		/// The <see cref="http://msdn.microsoft.com/en-us/library/vstudio/system.diagnostics.tracesource">TraceSource</see> instance
-		/// used for debugging and <see cref="https://github.com/lontivero/Open.Nat/wiki/Troubleshooting">Troubleshooting</see>
+		/// The <see href="http://msdn.microsoft.com/en-us/library/vstudio/system.diagnostics.tracesource">TraceSource</see> instance
+		/// used for debugging and <see href="https://github.com/lontivero/Open.Nat/wiki/Troubleshooting">Troubleshooting</see>
 		/// </summary>
 		/// <example>
 		/// NatUtility.TraceSource.Switch.Level = SourceLevels.Verbose;
@@ -114,16 +114,15 @@ namespace Open.Nat
 			foreach (var device in devices)
 			{
 				var key = device.ToString();
-				NatDevice nat;
-				if(Devices.TryGetValue(key, out nat))
-				{
-					nat.Touch();
-				}
-				else
-				{
-					Devices.Add(key, device);
-				}
-			}
+                if (Devices.TryGetValue(key, out NatDevice nat))
+                {
+                    nat.Touch();
+                }
+                else
+                {
+                    Devices.Add(key, device);
+                }
+            }
 			return devices;
 		}
 
